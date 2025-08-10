@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To-Do List App</title>
+    <style>
+        :root {
+            --bg: #f5f5f5;
+            --text: #333;
+            --card: #fff;
+            --primary: #4CAF50;
+            --accent: #45a049;
+        }
+
+        [data-theme="dark"] {
+            --bg: #1e1e1e;
+            --text: #f5f5f5;
+            --card: #2c2c2c;
+            --primary: #81c784;
+            --accent: #66bb6a;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        h1 {
+            margin-top: 30px;
+            letter-spacing: 1px;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 5px 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .theme-toggle:hover {
+            background: var(--accent);
+        }
+
+        .todo-container {
+            background: var(--card);
+            padding: 20px;
+            margin-top: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        input[type="text"]:focus {
+            border: 1px solid var(--primary);
+        }
+
+        .add-btn {
+            padding: 0 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .add-btn:hover {
+            background: var(--accent);
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            background: var(--primary);
+            color: white;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.3s ease-in;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        li:hover {
+            background: var(--accent);
+        }
+        li.done {
+            text-decoration: line-through;
+            background: gray !important;
+        }
+
+        button.delete-btn {
+            background: red;
+            border: none;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: background 0.3s;
+        }
+        button.delete-btn:hover {
+            background: darkred;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+    <h1>My To-Do List</h1>
+    <div class="todo-container">
+        <div class="input-container">
+            <input type="text" id="taskInput" placeholder="Enter a task" />
+            <button class="add-btn" onclick="addTask()">+</button>
+        </div>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        const taskInput = document.getElementById('taskInput');
+        const taskList = document.getElementById('taskList');
+
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            taskList.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.textContent = task.text;
+                if (task.done) li.classList.add('done');
+                li.onclick = () => toggleDone(index);
+
+                const btn = document.createElement('button');
+                btn.textContent = 'X';
+                btn.className = 'delete-btn';
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteTask(index);
+                };
+
+                li.appendChild(btn);
+                taskList.appendChild(li);
+            });
+        }
+
+        function saveTasks(tasks) {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function addTask() {
+            const text = taskInput.value.trim();
+            if (!text) return;
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.push({ text, done: false });
+            saveTasks(tasks);
+            taskInput.value = '';
+            loadTasks();
+        }
+
+        function toggleDone(index) {
+            const tasks = JSON.parse(localStorage.getItem('tasks'));
+            tasks[index].done = !tasks[index].done;
+            saveTasks(tasks);
+            loadTasks();
+        }
+
+        function deleteTask(index) {
+            const tasks = JSON.parse(localStorage.getItem('tasks'));
+            tasks.splice(index, 1);
+            saveTasks(tasks);
+            loadTasks();
+        }
+
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        function toggleTheme() {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        }
+
+       
+        loadTasks();
+    </script>
+</body>
+</html>
